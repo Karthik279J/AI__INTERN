@@ -41,9 +41,13 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # Load and preprocess dataset
+
+od = pd.read_csv("cybersecurity_intrusion_data.csv")
+od.drop(columns=['session_id'], inplace=True, errors='ignore')
 @st.cache_data
 def load_data():
     df = pd.read_csv("cybersecurity_intrusion_data.csv")
+    
     df.fillna(method='ffill', inplace=True)
     df['unusual_time_access'] = df['unusual_time_access'].astype(bool)
     df['attack_detected'] = df['attack_detected'].astype(bool)
@@ -72,7 +76,7 @@ section = st.sidebar.radio("Navigate", [
 # Data Overview
 if section == "Data Overview":
     st.subheader("🧾 Data Preview")
-    st.write(df)
+    st.write(od)
     st.subheader('Data Description')
     st.dataframe(df.describe(include='all'))
     st.write("Shape:", df.shape)
@@ -84,7 +88,7 @@ elif section == "Visualizations":
 
     viz_option = st.sidebar.selectbox(
         "Choose a visualization:",
-        ("Attack Distribution", "Protocol Types by Attack", "Packet Size vs Duration", "Feature Correlation Heatmap")
+        ("Attack Distribution","login_attempts by Attack", "Protocol Types by Attack", "Packet Size vs Duration", "Feature Correlation Heatmap","encryption_used by Attack")
     )
 
     if viz_option == "Attack Distribution":
@@ -98,6 +102,15 @@ elif section == "Visualizations":
     #now i want to replace 0,1,2 with TCP, UDP, ICMP
         fig2.update_xaxes(tickvals=[0, 1, 2], ticktext=['TCP', 'UDP', 'ICMP'])
         st.plotly_chart(fig2, use_container_width=True, key="hist")
+    elif viz_option == "encryption_used by Attack":
+        st.subheader("📊 Encryption Used by Attack")
+        fig2 = px.histogram(df, x='encryption_used', color='attack_detected', title='Encryption Used by Attack')
+        fig2.update_xaxes(tickvals=[0, 1, 2], ticktext=['None', 'DES', 'AES'])
+        st.plotly_chart(fig2, use_container_width=True, key="hist_encryption")
+    elif viz_option =="login_attempts by Attack":
+        st.subheader("📊 Login Attempts by Attack")
+        fig2 = px.histogram(df, x='failed_logins', color='attack_detected', title='Login Attempts by Attack')
+        st.plotly_chart(fig2, use_container_width=True, key="hist_login")
 
     elif viz_option == "Packet Size vs Duration":
         st.subheader("📊 Packet Size vs Duration")
