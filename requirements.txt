@@ -5,3 +5,5 @@ scikit-learn
 streamlit
 KMeans
 Kneed
+time
+speedtest
